@@ -48,7 +48,8 @@ class CartManager {
                 <i class="fas fa-shopping-cart"></i>
                 <span class="cart-badge"></span>
             `;
-            document.querySelector('.navbar').appendChild(cartIcon);
+            const navbar = document.querySelector('.navbar') || document.body;
+            navbar.appendChild(cartIcon);
         }
     }
 
@@ -364,11 +365,16 @@ class CartManager {
 // Initialize cart manager
 const cartManager = new CartManager();
 
-// Update product buttons to use cart manager
-document.addEventListener('DOMContentLoaded', () => {
+// Setup product buttons to use cart manager. Use a readiness guard so this
+// initializes correctly whether the script is injected before or after
+// DOMContentLoaded (app.loader.js injects scripts dynamically).
+function setupProductButtons() {
     document.querySelectorAll('.btn-cart').forEach(btn => {
         const card = btn.closest('.product-card');
-        const productName = card.querySelector('.product-name').textContent;
+        if (!card) return;
+        const nameEl = card.querySelector('.product-name');
+        if (!nameEl) return;
+        const productName = nameEl.textContent.trim();
 
         btn.setAttribute('data-product', productName);
         btn.innerHTML = `
@@ -377,13 +383,22 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         btn.addEventListener('click', () => {
+            const priceText = card.querySelector('.product-price')?.textContent || '0';
+            const imgText = card.querySelector('.product-image')?.textContent.trim() || '';
+            const categoryText = card.querySelector('.product-category')?.textContent || '';
             const product = {
                 name: productName,
-                price: parseFloat(card.querySelector('.product-price').textContent.replace('₹', '').replace(',', '')),
-                image: card.querySelector('.product-image').textContent.trim(),
-                category: card.querySelector('.product-category').textContent
+                price: parseFloat(priceText.replace('₹', '').replace(',', '')) || 0,
+                image: imgText,
+                category: categoryText
             };
             cartManager.addToCart(product);
         });
     });
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupProductButtons);
+} else {
+    setupProductButtons();
+}

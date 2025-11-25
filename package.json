@@ -1,4 +1,12 @@
 {
+  "name": "studentgear",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start:backend": "npm --prefix ./backend start",
+    "start:frontend": "npm --prefix ./frontend start",
+    "start": "npm run start:backend"
+  },
   "dependencies": {
     "puppeteer": "^24.26.1"
   }

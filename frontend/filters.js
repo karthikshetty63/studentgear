@@ -5,8 +5,9 @@ const filters = {
     priceRange: ''
 };
 
-// Initialize filter listeners
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize filter listeners with readiness guard so script works when
+// injected after DOMContentLoaded.
+function initFilters() {
     // Get filter elements
     const categoryFilter = document.getElementById('categoryFilter');
     const brandFilter = document.getElementById('brandFilter');
@@ -14,15 +15,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const applyFilterBtn = document.getElementById('applyFilter');
     const resetFilterBtn = document.getElementById('resetFilter');
 
+    if (!applyFilterBtn || !resetFilterBtn) return;
+
     // Add event listeners
     applyFilterBtn.addEventListener('click', applyFilters);
     resetFilterBtn.addEventListener('click', resetFilters);
 
     // Update filters object when selections change
-    categoryFilter.addEventListener('change', (e) => filters.category = e.target.value);
-    brandFilter.addEventListener('change', (e) => filters.brand = e.target.value);
-    priceFilter.addEventListener('change', (e) => filters.priceRange = e.target.value);
-});
+    if (categoryFilter) categoryFilter.addEventListener('change', (e) => filters.category = e.target.value);
+    if (brandFilter) brandFilter.addEventListener('change', (e) => filters.brand = e.target.value);
+    if (priceFilter) priceFilter.addEventListener('change', (e) => filters.priceRange = e.target.value);
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFilters);
+} else {
+    initFilters();
+}
 
 // Apply filters to products
 function applyFilters() {

@@ -3,10 +3,13 @@ const AUTH_KEY = 'studentgear_auth';
 const API_BASE = window.API_BASE || 'http://localhost:3000';
 let isLoggedIn = false;
 
-// Check login status on page load
-document.addEventListener('DOMContentLoaded', () => {
+// Check login status on page load (handle case where this script is loaded after DOMContentLoaded)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => checkLoginStatus());
+} else {
+    // DOM already ready (scripts injected after load). Run immediately.
     checkLoginStatus();
-});
+}
 
 // Check if user is logged in
 function checkLoginStatus() {
@@ -178,4 +181,111 @@ function closeModal(modal) {
     setTimeout(() => {
         if (modal.parentNode) modal.parentNode.removeChild(modal);
     }, 300);
+}
+
+// Show signup modal
+function showSignup() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-container signup-modal';
+    modal.innerHTML = `
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create an account</h3>
+                <button class="modal-close" onclick="closeModal(this.closest('.modal-container'))">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="signupForm" onsubmit="handleSignup(event)">
+                    <div class="form-group">
+                        <label for="signupName">Full name</label>
+                        <input type="text" id="signupName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupEmail">Email</label>
+                        <input type="email" id="signupEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupPassword">Password</label>
+                        <input type="password" id="signupPassword" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Create account</button>
+                </form>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('visible'), 10);
+    const backdrop = modal.querySelector('.modal-backdrop');
+    const closeBtn = modal.querySelector('.modal-close');
+    if (backdrop) backdrop.addEventListener('click', () => closeModal(modal));
+    if (closeBtn) closeBtn.addEventListener('click', () => closeModal(modal));
+    const firstInput = modal.querySelector('input, button, select, textarea');
+    if (firstInput) firstInput.focus();
+}
+
+// Handle signup submission — for this demo the server auto-creates users on /auth/login, so reuse that endpoint.
+async function handleSignup(event) {
+    event.preventDefault();
+    const name = document.getElementById('signupName').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value;
+    if (!name || !email || !password) {
+        showNotification('Please fill all fields', 'warning');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            showNotification(err.error || 'Signup failed', 'error');
+            return;
+        }
+        const data = await res.json();
+        const userObj = {
+            name: name,
+            email: email,
+            token: data.token || ('demo-token-' + btoa(email))
+        };
+        localStorage.setItem(AUTH_KEY, JSON.stringify(userObj));
+        isLoggedIn = true;
+        window.isLoggedIn = true;
+        updateLoginUI();
+        closeModal(document.querySelector('.signup-modal'));
+        showNotification('✅ Account created and logged in');
+    } catch (err) {
+        console.error('Signup error', err);
+        showNotification('Network error during signup — please try again', 'error');
+    }
+}
+
+// Simple forgot password placeholder
+function showForgotPassword() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-container forgot-modal';
+    modal.innerHTML = `
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Reset password</h3>
+                <button class="modal-close" onclick="closeModal(this.closest('.modal-container'))">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Enter your email and we'll send a reset link (demo only).</p>
+                <form onsubmit="event.preventDefault(); closeModal(this.closest('.modal-container')); showNotification('If this were real, a reset link would be sent.');">
+                    <div class="form-group">
+                        <label for="fpEmail">Email</label>
+                        <input type="email" id="fpEmail" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Send reset link</button>
+                </form>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('visible'), 10);
 }

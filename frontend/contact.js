@@ -1,10 +1,16 @@
-// Contact form functionality
-document.addEventListener('DOMContentLoaded', () => {
+// Contact form functionality with readiness guard
+function initContact() {
     const contactForm = document.getElementById('contactForm');
     if (contactForm) {
         contactForm.addEventListener('submit', handleContactSubmission);
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initContact);
+} else {
+    initContact();
+}
 
 // Handle contact form submission
 async function handleContactSubmission(event) {

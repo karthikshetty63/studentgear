@@ -30,6 +30,12 @@ const handleSearchInput = debounce(async (e) => {
     }
 }, 300);
 
+// Elements that will be wired during initialization. Declared here so
+// functions above (like showSearchSuggestions) can reference them even
+// when the script is injected after DOMContentLoaded.
+let searchInput = null;
+let searchBtn = null;
+
 // Show search suggestions
 function showSearchSuggestions(products) {
     let suggestions = document.getElementById('search-suggestions');
@@ -208,10 +214,12 @@ function showSearchResultsModal(matches, searchQuery) {
     }, 10);
 }
 
-// Initialize search functionality
-document.addEventListener('DOMContentLoaded', () => {
-    const searchInput = document.getElementById('searchInput');
-    const searchBtn = document.getElementById('searchBtn');
+// Initialize search functionality with readiness guard so this works
+// whether the script is injected before or after DOMContentLoaded.
+function initSearch() {
+    searchInput = document.getElementById('searchInput');
+    searchBtn = document.getElementById('searchBtn');
+    if (!searchInput || !searchBtn) return;
 
     // Search input handler
     searchInput.addEventListener('input', handleSearchInput);
@@ -232,4 +240,10 @@ document.addEventListener('DOMContentLoaded', () => {
             hideSearchSuggestions();
         }
     });
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSearch);
+} else {
+    initSearch();
+}
