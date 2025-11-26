@@ -1,0 +1,62 @@
+[
+  {
+    "name": "HP Pavilion X360",
+    "price": 64999,
+    "description": "Convertible laptop with touchscreen, perfect for note-taking and everyday use.",
+    "category": "Laptops",
+    "badge": "Hot Deal",
+    "image": "assets/hp pevilian.jpeg.jpg",
+    "affiliates": {
+      "amazon": "https://amzn.to/488WECM",
+      "flipkart": "https://www.flipkart.com/item/hp-pavilion-x360"
+    },
+    "createdAt": "2025-01-01T00:00:00.000Z"
+  },
+  {
+    "name": "Casio FX-991CW",
+    "price": 1529,
+    "description": "Advanced scientific calculator with 540+ functions for engineering students.",
+    "category": "Calculators",
+    "badge": "Best Seller",
+    "image": "assets/casio.jpeg.jpg",
+    "affiliates": {
+      "amazon": "https://amzn.to/3Xf9YAN"
+    },
+    "createdAt": "2025-01-02T00:00:00.000Z"
+  },
+  {
+    "name": "Atomic Habits",
+    "price": 497,
+    "description": "Bestselling book by James Clear about building good habits and breaking bad ones.",
+    "category": "Books",
+    "badge": "New",
+    "image": "assets/atomic.jpeg.jpg",
+    "affiliates": {
+      "amazon": "https://amzn.to/4ad4Jci"
+    },
+    "createdAt": "2025-01-03T00:00:00.000Z"
+  },
+  {
+    "name": "Mechanical Keyboard",
+    "price": 1799,
+    "description": "RGB mechanical keyboard with tactile switches for fast typing and programming.",
+    "category": "Accessories",
+    "badge": "Sale",
+    "image": "assets/mech keyboard.jpeg.jpg",
+    "affiliates": {
+      "amazon": "https://amzn.to/3XiWIuU"
+    },
+    "createdAt": "2025-01-04T00:00:00.000Z"
+  },
+  {
+    "name": "Raspberry Pi 4 Kit",
+    "price": 5999,
+    "description": "Complete Raspberry Pi 4 starter kit with all accessories for IoT projects.",
+    "category": "Kits",
+    "badge": "Popular",
+    "affiliates": {
+      "amazon": "https://www.amazon.in/dp/B07TD42S27"
+    },
+    "createdAt": "2025-01-05T00:00:00.000Z"
+  }
+]

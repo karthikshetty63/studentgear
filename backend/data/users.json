@@ -12,5 +12,12 @@
     "password": "password123",
     "_id": "2",
     "createdAt": "2025-11-26T15:21:34.390Z"
+  },
+  {
+    "email": "demo@studentgear.com",
+    "name": "demo",
+    "password": "demo123",
+    "_id": "3",
+    "createdAt": "2025-11-26T18:23:59.908Z"
   }
 ]
