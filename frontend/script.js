@@ -1619,7 +1619,7 @@ async function buyProduct(productId, button) {
 
         // Optional chat feedback
         if (typeof addBotMessage === 'function') {
-            addBotMessage(`� Opening purchase pages for ${product.name}...`);
+            addBotMessage(`🛒 Opening purchase pages for ${product.name}...`);
         }
 
         return true;
