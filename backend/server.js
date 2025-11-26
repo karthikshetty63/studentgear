@@ -203,6 +203,10 @@ function startServer() {
 
             const { item } = req.body || {};
             if (!item || !item.name) return res.status(400).json({ error: 'Item with name required' });
+            // Validate item name - must be non-empty string with reasonable length
+            if (typeof item.name !== 'string' || item.name.length > 200) {
+                return res.status(400).json({ error: 'Invalid item name' });
+            }
 
             const cart = await getOrCreateCart(token);
             const existing = cart.items.find(i => i.name === item.name);
@@ -229,6 +233,10 @@ function startServer() {
 
             const { name, quantity } = req.body || {};
             if (!name) return res.status(400).json({ error: 'Item name required' });
+            // Validate item name - must be non-empty string with reasonable length
+            if (typeof name !== 'string' || name.length > 200) {
+                return res.status(400).json({ error: 'Invalid item name' });
+            }
 
             const cart = await getOrCreateCart(token);
             const item = cart.items.find(i => i.name === name);
@@ -256,6 +264,11 @@ function startServer() {
             if (!token) return res.status(401).json({ error: 'Token required' });
 
             const name = decodeURIComponent(req.params.name);
+            // Validate item name - must be non-empty string with reasonable length
+            if (!name || typeof name !== 'string' || name.length > 200) {
+                return res.status(400).json({ error: 'Invalid item name' });
+            }
+
             const cart = await getOrCreateCart(token);
             cart.items = cart.items.filter(i => i.name !== name);
             cart.updatedAt = new Date();
