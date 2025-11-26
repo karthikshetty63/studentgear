@@ -33,8 +33,9 @@ const handleSearchInput = debounce(async (e) => {
 // Elements that will be wired during initialization. Declared here so
 // functions above (like showSearchSuggestions) can reference them even
 // when the script is injected after DOMContentLoaded.
-let searchInput = null;
-let searchBtn = null;
+// Use var to allow redeclaration if script.js already defined these
+var searchInput = searchInput || null;
+var searchBtn = searchBtn || null;
 
 // Show search suggestions
 function showSearchSuggestions(products) {

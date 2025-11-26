@@ -2018,6 +2018,8 @@ function showLoginModal() {
     `;
 
     document.body.appendChild(modal);
+    // Add visible class after a tiny delay to trigger CSS transition
+    setTimeout(() => modal.classList.add('visible'), 10);
     const close = () => modal.remove();
     modal.querySelector('.modal-close').addEventListener('click', close);
     modal.querySelector('.modal-backdrop').addEventListener('click', close);
@@ -2040,24 +2042,47 @@ function showLoginModal() {
         const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRe.test(email)) { showNotification('Please enter a valid email'); return; }
 
-        // Simulate server delay
         const submitBtn = form.querySelector('button[type="submit"]');
         const orig = submitBtn.textContent;
         submitBtn.textContent = 'Signing in...';
         submitBtn.disabled = true;
-        await new Promise(r => setTimeout(r, 900));
 
-        // Fake auth: accept any password >= 4 chars
-        if (password.length < 4) {
-            showNotification('Password too short');
-            submitBtn.disabled = false; submitBtn.textContent = orig; return;
+        // API base URL - use same origin if served from backend
+        const API_BASE = window.API_BASE || (window.location.origin.includes('localhost') ? window.location.origin : 'http://localhost:3000');
+
+        try {
+            const res = await fetch(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                showNotification(err.error || 'Login failed');
+                submitBtn.disabled = false; submitBtn.textContent = orig;
+                return;
+            }
+
+            const data = await res.json();
+            const user = {
+                name: (data.user && data.user.name) ? data.user.name : email.split('@')[0],
+                email: email,
+                token: data.token || ('demo-token-' + Math.random().toString(36).slice(2, 9))
+            };
+            setStoredUser(user);
+            updateLoginUI();
+            showNotification('✅ Logged in successfully');
+            modal.remove();
+        } catch (err) {
+            console.error('Login error', err);
+            // Fallback to demo mode if backend is unavailable
+            const user = { name: email.split('@')[0], email, token: 'demo-token-' + Math.random().toString(36).slice(2, 9) };
+            setStoredUser(user);
+            updateLoginUI();
+            showNotification('✅ Logged in (demo mode)');
+            modal.remove();
         }
-
-        const user = { name: email.split('@')[0], email, token: 'demo-token-' + Math.random().toString(36).slice(2, 9) };
-        setStoredUser(user);
-        updateLoginUI();
-        showNotification('✅ Logged in successfully');
-        modal.remove();
     });
 }
 
@@ -2074,4 +2099,9 @@ function showUserMenu() {
 }
 
 // Initialize login button state on DOM ready
-document.addEventListener('DOMContentLoaded', updateLoginUI);
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', updateLoginUI);
+} else {
+    // DOM already loaded, call immediately
+    updateLoginUI();
+}

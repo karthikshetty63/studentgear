@@ -1,0 +1,18 @@
+[
+  {
+    "token": "demo-token-dGVzdEB0ZXN0LmNvbToxNzY0MTY5OTQyNDU5",
+    "items": [],
+    "updatedAt": "2025-11-26T15:12:22.496Z"
+  },
+  {
+    "token": "demo-token-dGVzdEB0ZXN0LmNvbToxNzY0MTcwNzI4MjQw",
+    "items": [
+      {
+        "name": "Valid Product",
+        "price": 999,
+        "quantity": 1
+      }
+    ],
+    "updatedAt": "2025-11-26T15:25:28.279Z"
+  }
+]

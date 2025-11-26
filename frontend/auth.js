@@ -1,7 +1,8 @@
 // Login functionality
-const AUTH_KEY = 'studentgear_auth';
-const API_BASE = window.API_BASE || 'http://localhost:3000';
-let isLoggedIn = false;
+// Use var to allow redeclaration if script.js already defined AUTH_KEY
+var AUTH_KEY = AUTH_KEY || 'studentgear_auth';
+var API_BASE = window.API_BASE || 'http://localhost:3000';
+var isLoggedIn = typeof isLoggedIn !== 'undefined' ? isLoggedIn : false;
 
 // Check login status on page load (handle case where this script is loaded after DOMContentLoaded)
 if (document.readyState === 'loading') {

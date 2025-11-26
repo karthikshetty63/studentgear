@@ -1,0 +1,16 @@
+[
+  {
+    "email": "test@test.com",
+    "name": "test",
+    "password": "test123",
+    "_id": "1",
+    "createdAt": "2025-11-26T15:10:46.893Z"
+  },
+  {
+    "email": "test@example.com",
+    "name": "test",
+    "password": "password123",
+    "_id": "2",
+    "createdAt": "2025-11-26T15:21:34.390Z"
+  }
+]

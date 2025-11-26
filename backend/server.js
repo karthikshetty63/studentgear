@@ -171,7 +171,115 @@ function startServer() {
         }
     });
 
-    // (cart/auth routes remain unchanged and will use the assigned models)
+    // Cart API endpoints - require x-auth-token header for user identification
+    // Helper to find/create cart by token
+    async function getOrCreateCart(token) {
+        let cart = await Cart.findOne({ token });
+        if (!cart) {
+            cart = await Cart.create({ token, items: [] });
+        }
+        return cart;
+    }
+
+    // GET /cart - fetch user's cart
+    app.get('/cart', async (req, res) => {
+        try {
+            const token = req.headers['x-auth-token'];
+            if (!token) return res.status(401).json({ error: 'Token required' });
+
+            const cart = await getOrCreateCart(token);
+            res.json({ cart: cart.items || [] });
+        } catch (err) {
+            console.error('Get cart error:', err);
+            res.status(500).json({ error: 'Failed to fetch cart' });
+        }
+    });
+
+    // POST /cart - add item to cart
+    app.post('/cart', async (req, res) => {
+        try {
+            const token = req.headers['x-auth-token'];
+            if (!token) return res.status(401).json({ error: 'Token required' });
+
+            const { item } = req.body || {};
+            if (!item || !item.name) return res.status(400).json({ error: 'Item with name required' });
+            // Validate item name - must be non-empty string with reasonable length
+            if (typeof item.name !== 'string' || item.name.length > 200) {
+                return res.status(400).json({ error: 'Invalid item name' });
+            }
+
+            const cart = await getOrCreateCart(token);
+            const existing = cart.items.find(i => i.name === item.name);
+            if (existing) {
+                existing.quantity = (existing.quantity || 1) + 1;
+            } else {
+                cart.items.push({ ...item, quantity: item.quantity || 1 });
+            }
+            cart.updatedAt = new Date();
+            await cart.save();
+
+            res.json({ cart: cart.items });
+        } catch (err) {
+            console.error('Add to cart error:', err);
+            res.status(500).json({ error: 'Failed to add to cart' });
+        }
+    });
+
+    // PUT /cart - update item quantity
+    app.put('/cart', async (req, res) => {
+        try {
+            const token = req.headers['x-auth-token'];
+            if (!token) return res.status(401).json({ error: 'Token required' });
+
+            const { name, quantity } = req.body || {};
+            if (!name) return res.status(400).json({ error: 'Item name required' });
+            // Validate item name - must be non-empty string with reasonable length
+            if (typeof name !== 'string' || name.length > 200) {
+                return res.status(400).json({ error: 'Invalid item name' });
+            }
+
+            const cart = await getOrCreateCart(token);
+            const item = cart.items.find(i => i.name === name);
+            if (!item) return res.status(404).json({ error: 'Item not found in cart' });
+
+            if (quantity <= 0) {
+                cart.items = cart.items.filter(i => i.name !== name);
+            } else {
+                item.quantity = quantity;
+            }
+            cart.updatedAt = new Date();
+            await cart.save();
+
+            res.json({ cart: cart.items });
+        } catch (err) {
+            console.error('Update cart error:', err);
+            res.status(500).json({ error: 'Failed to update cart' });
+        }
+    });
+
+    // DELETE /cart/:name - remove item from cart
+    app.delete('/cart/:name', async (req, res) => {
+        try {
+            const token = req.headers['x-auth-token'];
+            if (!token) return res.status(401).json({ error: 'Token required' });
+
+            const name = decodeURIComponent(req.params.name);
+            // Validate item name - must be non-empty string with reasonable length
+            if (!name || typeof name !== 'string' || name.length > 200) {
+                return res.status(400).json({ error: 'Invalid item name' });
+            }
+
+            const cart = await getOrCreateCart(token);
+            cart.items = cart.items.filter(i => i.name !== name);
+            cart.updatedAt = new Date();
+            await cart.save();
+
+            res.json({ cart: cart.items });
+        } catch (err) {
+            console.error('Remove from cart error:', err);
+            res.status(500).json({ error: 'Failed to remove from cart' });
+        }
+    });
 
     // Development-only: expose persisted users for quick verification
     app.get('/debug/users', async (req, res) => {
