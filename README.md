@@ -14,136 +14,89 @@ This project uses Firebase for:
 
 ```
 studentgear/
-├── backend/                    # Express.js server
-│   ├── server.js              # Main server file
-│   ├── firebase-admin.js      # Firebase Admin SDK config
-│   ├── models.js              # Mongoose models (fallback)
-│   ├── package.json           # Backend dependencies
-│   └── data/                  # Local data storage (dev)
+├── backend/                    # 🖥️ Express.js API Server
+│   ├── server.js              # Main server & routes
+│   ├── firebase-admin.js      # Firebase Admin SDK
+│   └── models.js              # Data models
 │
-├── frontend/                   # Static frontend
-│   ├── index.html             # Main HTML file
-│   ├── firebase-config.js     # Firebase client SDK config
-│   ├── firebase-auth-ui.js    # Firebase Auth UI integration
-│   ├── script.js              # Main application logic
-│   ├── app.loader.js          # Script loader
+├── frontend/                   # 🎨 Static Frontend
+│   ├── index.html             # Single page app
+│   ├── css/                   # Stylesheets
+│   │   └── animations.css     # SaaS-style animations
 │   ├── style.css              # Main styles
-│   ├── cart-manager.js        # Cart functionality
-│   └── assets/                # Images and icons
+│   ├── firebase-config.js     # Firebase client config
+│   ├── firebase-auth-ui.js    # Auth UI (login/signup)
+│   ├── script.js              # Main app logic
+│   └── assets/                # Images
 │
-├── assets/                     # Shared assets
-├── tests/                      # E2E tests
-└── README.md
+├── assets/                     # 📷 Product images
+└── README.md                  # Documentation
 ```
+
+## ✨ SaaS-Style Animations
+
+Premium animations included:
+- 🔐 **Login Modal** - Smooth slide-in with glassmorphism effect
+- 🛒 **Cart** - Item add/remove animations with bounce effects
+- 🔔 **Notifications** - Toast notifications with progress bar
+- ⚡ **Buttons** - Ripple effects and hover animations
+- 📱 **Responsive** - Mobile-optimized transitions
 
 ## 🚀 Getting Started
 
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-- Firebase project (already configured)
-
-### Installation
-
-1. **Clone the repository**
+### Quick Start
 ```bash
+# Clone & run
 git clone https://github.com/karthikshetty63/studentgear.git
-cd studentgear
-```
-
-2. **Install backend dependencies**
-```bash
-cd backend
+cd studentgear/backend
 npm install
-```
-
-3. **Start the server**
-```bash
 npm start
-# or for development with auto-reload
-npm run dev
+
+# Open http://localhost:3000
 ```
 
-4. **Open in browser**
-```
-http://localhost:3000
-```
-
-## 🔐 Firebase Configuration
-
-The Firebase configuration is already set up in:
-- `frontend/firebase-config.js` - Client-side Firebase SDK
-- `backend/firebase-admin.js` - Server-side Firebase Admin SDK
-
-### Firebase Services Used
-
-| Service | Purpose |
-|---------|---------|
-| Authentication | User sign up/sign in with email |
-| Firestore | Store users, products, orders |
-| Realtime Database | Real-time cart sync |
-| Storage | Product images, avatars |
-
-### Firebase Console Setup
-
+### Firebase Setup (Required)
 1. Go to [Firebase Console](https://console.firebase.google.com)
 2. Select project: `studentgear-4122f`
-3. Enable required services:
-   - Authentication → Email/Password
-   - Firestore Database → Create database
-   - Realtime Database → Create database
-   - Storage → Get started
+3. Enable services:
+   - **Authentication** → Sign-in method → Email/Password → Enable
+   - **Firestore Database** → Create database → Test mode
+   - **Realtime Database** → Create database → Test mode
+   - **Storage** → Get started → Test mode
 
 ## 📦 Features
 
-- ✅ User authentication (sign up, sign in, sign out)
-- ✅ Product browsing by engineering branch
-- ✅ Shopping cart with real-time sync
-- ✅ Product search and filters
-- ✅ Responsive design
-- ✅ Chatbot assistant
-
-## 🛠 Development
-
-### Running Locally
-```bash
-# Start backend server
-cd backend && npm start
-
-# Frontend is served from backend at http://localhost:3000
-```
-
-### Environment Variables (Optional)
-Create `.env` in the backend folder:
-```env
-PORT=3000
-MONGODB_URI=your_mongodb_uri  # Optional fallback
-```
+| Feature | Status |
+|---------|--------|
+| Firebase Auth (Email/Password) | ✅ |
+| Firestore Database | ✅ |
+| Realtime Database | ✅ |
+| Firebase Storage | ✅ |
+| SaaS Login Animations | ✅ |
+| Cart Animations | ✅ |
+| Responsive Design | ✅ |
 
 ## 📄 API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/health` | Server health check |
-| GET | `/products` | List all products |
-| POST | `/auth/login` | User login/signup |
-| GET | `/cart` | Get user's cart |
-| POST | `/cart` | Add item to cart |
-| PUT | `/cart` | Update cart item |
-| DELETE | `/cart/:name` | Remove item from cart |
+```
+GET  /health           # Server status
+GET  /products         # List products
+POST /auth/login       # Login/Register
+GET  /cart             # Get cart items
+POST /cart             # Add to cart
+PUT  /cart             # Update quantity
+DELETE /cart/:name     # Remove item
+```
 
 ## 🚀 Deployment
 
-### GitHub Pages (Frontend)
-The frontend is automatically deployed via GitHub Actions workflow.
+**Frontend:** Auto-deploys to GitHub Pages
 
-### Backend Hosting (Render)
-1. Create account at [render.com](https://render.com)
-2. Create new Web Service
-3. Connect GitHub repo
-4. Build command: `cd backend && npm install`
-5. Start command: `node backend/server.js`
+**Backend:** Deploy to Render.com
+```bash
+Build: cd backend && npm install
+Start: node backend/server.js
+```
 
-## 📝 License
-
-MIT License - Built for students by students 💙
+---
+Built for students by students 💙

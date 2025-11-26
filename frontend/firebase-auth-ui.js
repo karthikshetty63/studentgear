@@ -119,45 +119,57 @@
 
     function showFirebaseLoginModal() {
         // Remove existing modal
-        const existing = document.querySelector('.firebase-login-modal');
+        const existing = document.querySelector('.login-modal-saas');
         if (existing) existing.remove();
 
         const modal = document.createElement('div');
-        modal.className = 'modal-container firebase-login-modal';
+        modal.className = 'login-modal-saas';
         modal.innerHTML = `
-            <div class="modal-backdrop"></div>
-            <div class="modal-content" style="max-width:420px;padding:24px;">
+            <div class="modal-overlay"></div>
+            <div class="modal-card">
                 <div class="modal-header">
-                    <h3>🎓 Welcome to StudentGear</h3>
+                    <div class="modal-logo">🎓</div>
+                    <h2 class="modal-title">Welcome to StudentGear</h2>
+                    <p class="modal-subtitle">Your smart student marketplace</p>
                     <button class="modal-close" aria-label="Close">×</button>
                 </div>
                 <div class="modal-body">
-                    <div class="auth-tabs" style="display:flex;margin-bottom:16px;border-bottom:2px solid #eee;">
-                        <button class="auth-tab active" data-tab="login" style="flex:1;padding:12px;border:none;background:none;cursor:pointer;font-weight:600;color:#6366f1;border-bottom:2px solid #6366f1;margin-bottom:-2px;">Login</button>
-                        <button class="auth-tab" data-tab="signup" style="flex:1;padding:12px;border:none;background:none;cursor:pointer;font-weight:600;color:#666;">Sign Up</button>
+                    <div class="auth-tabs">
+                        <button class="auth-tab active" data-tab="login">Sign In</button>
+                        <button class="auth-tab" data-tab="signup">Create Account</button>
                     </div>
                     
-                    <form id="firebaseLoginForm" class="auth-form">
-                        <div style="margin-bottom:12px;">
-                            <label style="display:block;margin-bottom:4px;font-weight:500;">Email</label>
-                            <input name="email" type="email" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;" placeholder="your@email.com">
+                    <form id="firebaseLoginForm">
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input name="email" type="email" required class="form-input" placeholder="you@example.com">
                         </div>
-                        <div style="margin-bottom:12px;position:relative;">
-                            <label style="display:block;margin-bottom:4px;font-weight:500;">Password</label>
-                            <input name="password" type="password" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;" placeholder="••••••••">
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <div class="password-wrapper">
+                                <input name="password" type="password" required class="form-input" placeholder="••••••••">
+                                <button type="button" class="password-toggle">👁</button>
+                            </div>
                         </div>
-                        <div id="nameField" style="margin-bottom:12px;display:none;">
-                            <label style="display:block;margin-bottom:4px;font-weight:500;">Full Name</label>
-                            <input name="displayName" type="text" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;" placeholder="John Doe">
+                        <div class="form-group" id="nameField" style="display:none;">
+                            <label class="form-label">Full Name</label>
+                            <input name="displayName" type="text" class="form-input" placeholder="John Doe">
                         </div>
-                        <div id="authError" style="color:#ef4444;font-size:14px;margin-bottom:12px;display:none;"></div>
-                        <button type="submit" class="btn-primary" style="width:100%;padding:12px;background:#6366f1;color:white;border:none;border-radius:6px;font-weight:600;cursor:pointer;">
-                            Login
+                        <div id="authError" class="error-message" style="display:none;"></div>
+                        <button type="submit" class="submit-btn btn-animated">
+                            <span>Sign In</span>
                         </button>
                     </form>
                     
-                    <div style="text-align:center;margin-top:16px;color:#666;font-size:14px;">
-                        <a href="#" id="forgotPassword" style="color:#6366f1;">Forgot password?</a>
+                    <div class="divider"><span>or continue with</span></div>
+                    
+                    <div class="social-login">
+                        <button class="social-btn" title="Google">G</button>
+                        <button class="social-btn" title="GitHub">⌘</button>
+                    </div>
+                    
+                    <div style="text-align:center;margin-top:20px;">
+                        <a href="#" id="forgotPassword" style="color:#667eea;font-size:0.9rem;text-decoration:none;">Forgot your password?</a>
                     </div>
                 </div>
             </div>
@@ -170,33 +182,39 @@
         const form = modal.querySelector('#firebaseLoginForm');
         const tabs = modal.querySelectorAll('.auth-tab');
         const nameField = modal.querySelector('#nameField');
-        const submitBtn = form.querySelector('button[type="submit"]');
+        const submitBtn = form.querySelector('.submit-btn');
         const errorDiv = modal.querySelector('#authError');
+        const passwordToggle = modal.querySelector('.password-toggle');
+        const passwordInput = form.querySelector('input[name="password"]');
         let isSignUp = false;
 
-        // Tab switching
+        // Password toggle
+        passwordToggle.addEventListener('click', () => {
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+            passwordToggle.textContent = type === 'password' ? '👁' : '🙈';
+        });
+
+        // Tab switching with animation
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
-                tabs.forEach(t => {
-                    t.classList.remove('active');
-                    t.style.color = '#666';
-                    t.style.borderBottom = 'none';
-                });
+                tabs.forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                tab.style.color = '#6366f1';
-                tab.style.borderBottom = '2px solid #6366f1';
                 
                 isSignUp = tab.dataset.tab === 'signup';
                 nameField.style.display = isSignUp ? 'block' : 'none';
-                submitBtn.textContent = isSignUp ? 'Create Account' : 'Login';
+                submitBtn.querySelector('span').textContent = isSignUp ? 'Create Account' : 'Sign In';
                 errorDiv.style.display = 'none';
             });
         });
 
-        // Close modal
-        const closeModal = () => modal.remove();
+        // Close modal with animation
+        const closeModal = () => {
+            modal.classList.remove('visible');
+            setTimeout(() => modal.remove(), 300);
+        };
         modal.querySelector('.modal-close').addEventListener('click', closeModal);
-        modal.querySelector('.modal-backdrop').addEventListener('click', closeModal);
+        modal.querySelector('.modal-overlay').addEventListener('click', closeModal);
 
         // Handle form submit
         form.addEventListener('submit', async (e) => {
@@ -206,7 +224,8 @@
             const displayName = form.elements['displayName'].value.trim();
 
             submitBtn.disabled = true;
-            submitBtn.textContent = isSignUp ? 'Creating account...' : 'Signing in...';
+            submitBtn.classList.add('loading');
+            submitBtn.querySelector('span').textContent = isSignUp ? 'Creating account...' : 'Signing in...';
             errorDiv.style.display = 'none';
 
             try {
@@ -219,18 +238,20 @@
 
                 if (result.success) {
                     closeModal();
-                    showNotification(isSignUp ? '🎉 Account created successfully!' : '✅ Welcome back!');
+                    showSaasNotification(isSignUp ? 'Account created!' : 'Welcome back!', 'success', isSignUp ? '🎉' : '✅');
                 } else {
                     errorDiv.textContent = result.error;
                     errorDiv.style.display = 'block';
                     submitBtn.disabled = false;
-                    submitBtn.textContent = isSignUp ? 'Create Account' : 'Login';
+                    submitBtn.classList.remove('loading');
+                    submitBtn.querySelector('span').textContent = isSignUp ? 'Create Account' : 'Sign In';
                 }
             } catch (error) {
                 errorDiv.textContent = error.message;
                 errorDiv.style.display = 'block';
                 submitBtn.disabled = false;
-                submitBtn.textContent = isSignUp ? 'Create Account' : 'Login';
+                submitBtn.classList.remove('loading');
+                submitBtn.querySelector('span').textContent = isSignUp ? 'Create Account' : 'Sign In';
             }
         });
 
@@ -257,21 +278,45 @@
         form.elements['email'].focus();
     }
 
+    // SaaS-style notification function
+    function showSaasNotification(message, type = 'success', icon = '✓') {
+        // Remove existing notification
+        const existing = document.querySelector('.notification-saas');
+        if (existing) existing.remove();
+
+        const notification = document.createElement('div');
+        notification.className = `notification-saas ${type}`;
+        notification.innerHTML = `
+            <div class="notification-icon">${icon}</div>
+            <div class="notification-content">
+                <div class="notification-title">${type === 'success' ? 'Success' : type === 'error' ? 'Error' : 'Notice'}</div>
+                <div class="notification-message">${message}</div>
+            </div>
+            <button class="notification-close">×</button>
+            <div class="progress-bar"></div>
+        `;
+        
+        document.body.appendChild(notification);
+        setTimeout(() => notification.classList.add('visible'), 10);
+        
+        notification.querySelector('.notification-close').addEventListener('click', () => {
+            notification.classList.remove('visible');
+            setTimeout(() => notification.remove(), 300);
+        });
+        
+        setTimeout(() => {
+            notification.classList.remove('visible');
+            setTimeout(() => notification.remove(), 300);
+        }, 5000);
+    }
+
     // Helper function to show notifications (if not already defined)
     function showNotification(message) {
         if (typeof window.showNotification === 'function') {
             window.showNotification(message);
             return;
         }
-
-        const notification = document.createElement('div');
-        notification.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#1f2937;color:white;padding:12px 20px;border-radius:8px;z-index:10003;animation:slideIn 0.3s ease;';
-        notification.textContent = message;
-        document.body.appendChild(notification);
-        setTimeout(() => {
-            notification.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
+        showSaasNotification(message, 'success', '✅');
     }
 
     // Initialize when ready
@@ -292,4 +337,5 @@
 
     // Export for global access
     window.showFirebaseLoginModal = showFirebaseLoginModal;
+    window.showSaasNotification = showSaasNotification;
 })();

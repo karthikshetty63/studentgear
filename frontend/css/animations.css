@@ -1,0 +1,1030 @@
+/* ============================================
+   StudentGear - Modern SaaS Animations
+   Premium animations for login, cart, and UI
+   ============================================ */
+
+/* CSS Variables for Animation */
+:root {
+    --animation-fast: 0.15s;
+    --animation-normal: 0.3s;
+    --animation-slow: 0.5s;
+    --animation-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --animation-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --animation-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    
+    /* Gradient Colors */
+    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    --gradient-danger: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+    --gradient-warning: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --gradient-info: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --gradient-dark: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+    
+    /* Glow Effects */
+    --glow-primary: 0 0 20px rgba(102, 126, 234, 0.4);
+    --glow-success: 0 0 20px rgba(56, 239, 125, 0.4);
+    --glow-white: 0 0 30px rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   Keyframe Animations
+   ============================================ */
+
+/* Fade In Up */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Fade In Down */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Scale In */
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Bounce In */
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Slide In Right */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Slide In Left */
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Pulse */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Shake */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+/* Glow Pulse */
+@keyframes glowPulse {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(102, 126, 234, 0.4),
+                    0 0 10px rgba(102, 126, 234, 0.3),
+                    0 0 15px rgba(102, 126, 234, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 10px rgba(102, 126, 234, 0.6),
+                    0 0 20px rgba(102, 126, 234, 0.5),
+                    0 0 30px rgba(102, 126, 234, 0.4);
+    }
+}
+
+/* Spinner */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Float */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Ripple Effect */
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* Success Checkmark */
+@keyframes checkmark {
+    0% {
+        stroke-dashoffset: 50;
+    }
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* Cart Item Add */
+@keyframes cartItemAdd {
+    0% {
+        opacity: 0;
+        transform: translateX(-20px) scale(0.8);
+    }
+    50% {
+        transform: translateX(5px) scale(1.02);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+/* Cart Item Remove */
+@keyframes cartItemRemove {
+    0% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(50px) scale(0.8);
+    }
+}
+
+/* Cart Badge Pop */
+@keyframes badgePop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.4); }
+    100% { transform: scale(1); }
+}
+
+/* ============================================
+   Login Modal - SaaS Style
+   ============================================ */
+
+.login-modal-saas {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--animation-normal) var(--animation-smooth);
+}
+
+.login-modal-saas.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.login-modal-saas .modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.login-modal-saas .modal-card {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    margin: 20px;
+    background: linear-gradient(145deg, rgba(30, 30, 50, 0.95), rgba(20, 20, 35, 0.98));
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5),
+                0 0 40px rgba(102, 126, 234, 0.1);
+    overflow: hidden;
+    transform: scale(0.9) translateY(20px);
+    transition: all var(--animation-normal) var(--animation-spring);
+}
+
+.login-modal-saas.visible .modal-card {
+    transform: scale(1) translateY(0);
+}
+
+/* Modal Header */
+.login-modal-saas .modal-header {
+    padding: 28px 32px 20px;
+    text-align: center;
+    position: relative;
+}
+
+.login-modal-saas .modal-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 32px;
+    right: 32px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+}
+
+.login-modal-saas .modal-logo {
+    font-size: 2.5rem;
+    margin-bottom: 8px;
+    animation: float 3s ease-in-out infinite;
+}
+
+.login-modal-saas .modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.login-modal-saas .modal-subtitle {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 8px;
+}
+
+.login-modal-saas .modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all var(--animation-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-modal-saas .modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    transform: rotate(90deg);
+}
+
+/* Modal Body */
+.login-modal-saas .modal-body {
+    padding: 24px 32px 32px;
+}
+
+/* Auth Tabs */
+.login-modal-saas .auth-tabs {
+    display: flex;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 24px;
+}
+
+.login-modal-saas .auth-tab {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: all var(--animation-fast);
+    position: relative;
+    overflow: hidden;
+}
+
+.login-modal-saas .auth-tab.active {
+    background: var(--gradient-primary);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.login-modal-saas .auth-tab:not(.active):hover {
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Form Groups */
+.login-modal-saas .form-group {
+    margin-bottom: 20px;
+    animation: fadeInUp var(--animation-normal) ease-out;
+}
+
+.login-modal-saas .form-group:nth-child(1) { animation-delay: 0.1s; }
+.login-modal-saas .form-group:nth-child(2) { animation-delay: 0.15s; }
+.login-modal-saas .form-group:nth-child(3) { animation-delay: 0.2s; }
+
+.login-modal-saas .form-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 8px;
+    transition: color var(--animation-fast);
+}
+
+.login-modal-saas .form-input {
+    width: 100%;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    color: #fff;
+    font-size: 1rem;
+    outline: none;
+    transition: all var(--animation-fast);
+}
+
+.login-modal-saas .form-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.login-modal-saas .form-input:focus {
+    border-color: rgba(102, 126, 234, 0.5);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.login-modal-saas .form-input:focus + .form-label,
+.login-modal-saas .form-group:focus-within .form-label {
+    color: #667eea;
+}
+
+/* Password Toggle */
+.login-modal-saas .password-wrapper {
+    position: relative;
+}
+
+.login-modal-saas .password-toggle {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    padding: 4px;
+    transition: color var(--animation-fast);
+}
+
+.login-modal-saas .password-toggle:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Submit Button */
+.login-modal-saas .submit-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--gradient-primary);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--animation-fast);
+    position: relative;
+    overflow: hidden;
+}
+
+.login-modal-saas .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+.login-modal-saas .submit-btn:active {
+    transform: translateY(0);
+}
+
+.login-modal-saas .submit-btn.loading {
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.login-modal-saas .submit-btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid transparent;
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Ripple Effect */
+.login-modal-saas .submit-btn .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(0);
+    animation: ripple 0.6s linear;
+    pointer-events: none;
+}
+
+/* Error Message */
+.login-modal-saas .error-message {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: #f87171;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+    animation: shake 0.5s ease;
+}
+
+/* Success Message */
+.login-modal-saas .success-message {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: #4ade80;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+    animation: fadeInUp 0.3s ease;
+}
+
+/* Divider */
+.login-modal-saas .divider {
+    display: flex;
+    align-items: center;
+    margin: 24px 0;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 0.85rem;
+}
+
+.login-modal-saas .divider::before,
+.login-modal-saas .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+}
+
+.login-modal-saas .divider span {
+    padding: 0 16px;
+}
+
+/* Social Login */
+.login-modal-saas .social-login {
+    display: flex;
+    gap: 12px;
+}
+
+.login-modal-saas .social-btn {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all var(--animation-fast);
+}
+
+.login-modal-saas .social-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+/* ============================================
+   Cart - SaaS Style
+   ============================================ */
+
+/* Cart Icon with Badge */
+.cart-icon-saas {
+    position: relative;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 12px;
+    transition: all var(--animation-fast);
+}
+
+.cart-icon-saas:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.cart-icon-saas .cart-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 20px;
+    height: 20px;
+    background: var(--gradient-danger);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+    transform: scale(0);
+    transition: transform var(--animation-fast) var(--animation-bounce);
+}
+
+.cart-icon-saas .cart-badge.visible {
+    transform: scale(1);
+}
+
+.cart-icon-saas .cart-badge.pulse {
+    animation: badgePop 0.3s var(--animation-bounce);
+}
+
+/* Cart Dropdown */
+.cart-dropdown-saas {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    width: 380px;
+    max-height: 500px;
+    background: linear-gradient(145deg, rgba(30, 30, 50, 0.98), rgba(20, 20, 35, 0.99));
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4),
+                0 0 30px rgba(102, 126, 234, 0.1);
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px) scale(0.95);
+    transition: all var(--animation-normal) var(--animation-spring);
+    z-index: 1000;
+}
+
+.cart-dropdown-saas.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+/* Cart Header */
+.cart-dropdown-saas .cart-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cart-dropdown-saas .cart-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cart-dropdown-saas .cart-header .item-count {
+    background: rgba(102, 126, 234, 0.2);
+    color: #667eea;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+}
+
+/* Cart Items */
+.cart-dropdown-saas .cart-items {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 12px;
+}
+
+.cart-dropdown-saas .cart-items::-webkit-scrollbar {
+    width: 6px;
+}
+
+.cart-dropdown-saas .cart-items::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.cart-dropdown-saas .cart-items::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+/* Cart Item */
+.cart-dropdown-saas .cart-item {
+    display: flex;
+    gap: 14px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 14px;
+    margin-bottom: 10px;
+    border: 1px solid transparent;
+    transition: all var(--animation-fast);
+    animation: cartItemAdd var(--animation-normal) var(--animation-spring);
+}
+
+.cart-dropdown-saas .cart-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+.cart-dropdown-saas .cart-item.removing {
+    animation: cartItemRemove var(--animation-normal) var(--animation-smooth) forwards;
+}
+
+.cart-dropdown-saas .cart-item .item-image {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    flex-shrink: 0;
+}
+
+.cart-dropdown-saas .cart-item .item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.cart-dropdown-saas .cart-item .item-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cart-dropdown-saas .cart-item .item-price {
+    font-size: 0.9rem;
+    color: #667eea;
+    font-weight: 600;
+}
+
+.cart-dropdown-saas .cart-item .item-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+/* Quantity Controls */
+.cart-dropdown-saas .quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.cart-dropdown-saas .quantity-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.7);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all var(--animation-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cart-dropdown-saas .quantity-btn:hover {
+    background: var(--gradient-primary);
+    color: #fff;
+}
+
+.cart-dropdown-saas .quantity-value {
+    min-width: 24px;
+    text-align: center;
+    font-weight: 600;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+/* Remove Button */
+.cart-dropdown-saas .remove-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: all var(--animation-fast);
+}
+
+.cart-dropdown-saas .remove-btn:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* Cart Footer */
+.cart-dropdown-saas .cart-footer {
+    padding: 20px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.cart-dropdown-saas .cart-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.cart-dropdown-saas .cart-total .label {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.95rem;
+}
+
+.cart-dropdown-saas .cart-total .amount {
+    font-size: 1.3rem;
+    font-weight: 700;
+    background: var(--gradient-success);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.cart-dropdown-saas .checkout-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--gradient-success);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--animation-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.cart-dropdown-saas .checkout-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(56, 239, 125, 0.3);
+}
+
+/* Empty Cart */
+.cart-dropdown-saas .empty-cart {
+    padding: 40px 24px;
+    text-align: center;
+}
+
+.cart-dropdown-saas .empty-cart .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.cart-dropdown-saas .empty-cart p {
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+}
+
+/* ============================================
+   Notifications - SaaS Style
+   ============================================ */
+
+.notification-saas {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    min-width: 320px;
+    max-width: 400px;
+    padding: 16px 20px;
+    background: linear-gradient(145deg, rgba(30, 30, 50, 0.98), rgba(20, 20, 35, 0.99));
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    z-index: 20000;
+    opacity: 0;
+    transform: translateX(100px) scale(0.9);
+    transition: all var(--animation-normal) var(--animation-spring);
+}
+
+.notification-saas.visible {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+}
+
+.notification-saas .notification-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.notification-saas.success .notification-icon {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+}
+
+.notification-saas.error .notification-icon {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+}
+
+.notification-saas.warning .notification-icon {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+}
+
+.notification-saas.info .notification-icon {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+}
+
+.notification-saas .notification-content {
+    flex: 1;
+}
+
+.notification-saas .notification-title {
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 2px;
+}
+
+.notification-saas .notification-message {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.notification-saas .notification-close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: all var(--animation-fast);
+}
+
+.notification-saas .notification-close:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Progress Bar */
+.notification-saas .progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: var(--gradient-primary);
+    border-radius: 0 0 14px 14px;
+    animation: shrink 5s linear forwards;
+}
+
+@keyframes shrink {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+/* ============================================
+   Button Animations
+   ============================================ */
+
+.btn-animated {
+    position: relative;
+    overflow: hidden;
+    transition: all var(--animation-fast);
+}
+
+.btn-animated::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-animated:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* Add to Cart Button Animation */
+.btn-add-cart {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-add-cart.adding {
+    pointer-events: none;
+}
+
+.btn-add-cart.adding::after {
+    content: '✓';
+    position: absolute;
+    inset: 0;
+    background: var(--gradient-success);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: scaleIn 0.3s var(--animation-bounce);
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 480px) {
+    .login-modal-saas .modal-card {
+        margin: 16px;
+        border-radius: 20px;
+    }
+    
+    .login-modal-saas .modal-header {
+        padding: 24px 24px 16px;
+    }
+    
+    .login-modal-saas .modal-body {
+        padding: 20px 24px 28px;
+    }
+    
+    .cart-dropdown-saas {
+        width: calc(100vw - 32px);
+        right: 16px;
+    }
+    
+    .notification-saas {
+        left: 16px;
+        right: 16px;
+        min-width: auto;
+    }
+}
