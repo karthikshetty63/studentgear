@@ -1,12 +1,18 @@
 // app.loader.js — loads application scripts sequentially to reduce number of <script> tags in HTML
 (function () {
+    // Initialize Firebase first, then load other scripts
+    if (typeof initializeFirebase === 'function') {
+        initializeFirebase();
+    }
+
     // Note: script.js already contains auth and search functionality,
     // so we don't load the separate search.js and auth.js modules.
     const scripts = [
         'script.js',
         'filters.js',
         'contact.js',
-        'cart-manager.js'
+        'cart-manager.js',
+        'firebase-auth-ui.js'
     ];
 
     function loadSequential(index) {
