@@ -29,5 +29,20 @@
   {
     "token": "firebase-jV2W7olvGdcGGAVbjAmBkkOHJlX2",
     "items": []
+  },
+  {
+    "token": "test-token-123",
+    "items": [
+      {
+        "name": "Test Product",
+        "price": 100,
+        "quantity": 1
+      }
+    ],
+    "updatedAt": "2025-11-28T05:24:30.255Z"
+  },
+  {
+    "token": "demo-token-dGVzdEBleGFtcGxlLmNvbToxNzY0MzA3NTE3ODkx",
+    "items": []
   }
 ]

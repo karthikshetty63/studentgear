@@ -288,9 +288,13 @@ class CartManager {
     }
 
     checkout() {
-        if (!isLoggedIn) {
+        // Check if user is logged in by looking for auth token
+        const token = this.getAuthToken();
+        if (!token) {
             this.showNotification('Please log in to checkout', 'warning');
-            showLoginModal();
+            if (typeof showLoginModal === 'function') {
+                showLoginModal();
+            }
             return;
         }
 
