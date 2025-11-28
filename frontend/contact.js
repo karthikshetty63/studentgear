@@ -74,6 +74,23 @@ async function handleContactSubmission(event) {
 
         if (!success) {
             console.error('Contact backend error: no successful response', body);
+
+            // Try client-side Firestore fallback (useful when backend tokens fail)
+            try {
+                if (window.FirestoreService && typeof FirestoreService.saveContactMessage === 'function') {
+                    const saved = await FirestoreService.saveContactMessage(data);
+                    if (saved && saved.success) {
+                        if (typeof showSaasNotification === 'function') showSaasNotification('Message saved directly to Firestore (fallback).', 'success', '📬');
+                        event.target.reset();
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn('Client-side Firestore fallback failed', e);
+            }
+
             if (typeof showSaasNotification === 'function') showSaasNotification('Failed to send message. Try again later.', 'error', '❌');
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;

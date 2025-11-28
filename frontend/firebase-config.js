@@ -265,7 +265,8 @@ const FirestoreService = {
             if (!firebaseDb || typeof firebaseDb.collection !== 'function') {
                 throw new Error('Firestore not initialized');
             }
-            const docRef = await firebaseDb.collection('contacts').add({
+            // Use the `contactMessages` collection to match backend rules
+            const docRef = await firebaseDb.collection('contactMessages').add({
                 name: message.name || null,
                 email: message.email || null,
                 subject: message.subject || null,
