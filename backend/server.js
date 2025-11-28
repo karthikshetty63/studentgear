@@ -37,10 +37,21 @@ try {
 // fallback now persists to simple JSON files under backend/data to make
 // local testing less surprising (data survives restarts).
 let User, Cart, Product;
-let isUsingMongo = false;
+let isUsingFirebase = false;
 
-const mongooseModels = require('./models');
+const firebaseAdmin = require('./firebase-admin');
 const fs = require('fs');
+
+// simple HTML escape helper for admin UI
+function escapeHtml(str) {
+    if (str === null || typeof str === 'undefined') return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
 
 function makeInMemoryModels() {
     const dataDir = path.join(__dirname, 'data');
@@ -118,15 +129,165 @@ function makeInMemoryModels() {
 
     return { User: UserModel, Cart: CartModel, Product: ProductModel };
 }
+function makeFirestoreModels() {
+    const { FirestoreOperations } = firebaseAdmin;
+
+    class UserModel {
+        static async findOne(query) {
+            if (!query) return null;
+            if (query.email) {
+                const users = await FirestoreOperations.queryCollection('users', [{ field: 'email', operator: '==', value: query.email }]);
+                return users.length ? users[0] : null;
+            }
+            if (query._id) {
+                const doc = await FirestoreOperations.getDoc('users', query._id);
+                return doc;
+            }
+            return null;
+        }
+        static async create(obj) {
+            const id = await FirestoreOperations.addDoc('users', obj);
+            if (!id) return null;
+            const created = await FirestoreOperations.getDoc('users', id);
+            return created;
+        }
+    }
+
+    class CartModel {
+        constructor(data) { Object.assign(this, data); }
+        static async findOne(query) {
+            if (!query) return null;
+            if (query.token) {
+                const carts = await FirestoreOperations.queryCollection('carts', [{ field: 'token', operator: '==', value: query.token }]);
+                return carts.length ? carts[0] : null;
+            }
+            return null;
+        }
+        static async create(obj) {
+            const id = await FirestoreOperations.addDoc('carts', obj);
+            const created = id ? await FirestoreOperations.getDoc('carts', id) : obj;
+            return created;
+        }
+        async save() {
+            try {
+                if (this.id) {
+                    await FirestoreOperations.updateDoc('carts', this.id, this);
+                    return this;
+                }
+                // Try to find by token and update, else create
+                const existing = await CartModel.findOne({ token: this.token });
+                if (existing && existing.id) {
+                    await FirestoreOperations.updateDoc('carts', existing.id, this);
+                    return this;
+                }
+                const id = await FirestoreOperations.addDoc('carts', this);
+                if (id) this.id = id;
+                return this;
+            } catch (e) {
+                console.error('Cart save error:', e && e.message);
+                return this;
+            }
+        }
+    }
+
+    class ProductModel {
+        static async find() { return await FirestoreOperations.getAllDocs('products'); }
+        static async create(obj) { const id = await FirestoreOperations.addDoc('products', obj); return id ? { id, ...obj } : obj; }
+    }
+
+    return { User: UserModel, Cart: CartModel, Product: ProductModel };
+}
 
 function startServer() {
     // Health endpoint reports whether we're using MongoDB or the in-memory fallback
     app.get('/health', (req, res) => {
         const state = {
-            mode: isUsingMongo ? 'mongodb' : 'in-memory',
-            mongooseReadyState: mongoose && mongoose.connection ? mongoose.connection.readyState : null
+            mode: isUsingFirebase ? 'firebase' : 'in-memory',
+            firestoreAvailable: !!firebaseAdmin.getFirestore()
         };
         res.json(state);
+    });
+
+    // Authenticated webhook to receive contact messages from frontend and store via Firebase Admin
+    app.post('/api/contact', async (req, res) => {
+        try {
+            const { name, email, subject, message } = req.body || {};
+            // Basic server-side validation
+            if (!name || !email || !message) return res.status(400).json({ error: 'name, email and message are required' });
+            if (typeof name !== 'string' || name.length > 200) return res.status(400).json({ error: 'Invalid name' });
+            if (typeof email !== 'string' || email.length > 200) return res.status(400).json({ error: 'Invalid email' });
+            if (typeof message !== 'string' || message.length > 5000) return res.status(400).json({ error: 'Invalid message' });
+
+            // Require Firebase ID token in Authorization header
+            const authHeader = req.headers.authorization || req.headers['x-auth-token'];
+            if (!authHeader) return res.status(401).json({ error: 'Authorization token required' });
+            const token = (authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader);
+
+            // Verify token using firebase-admin helper
+            const decoded = await firebaseAdmin.verifyIdToken(token);
+            if (!decoded) return res.status(401).json({ error: 'Invalid token' });
+
+            // Save to Firestore using admin helper if available
+            try {
+                const { FirestoreOperations } = firebaseAdmin;
+                const payload = {
+                    name,
+                    email,
+                    subject: subject || null,
+                    message,
+                    userUid: decoded.uid || null,
+                    createdAt: new Date().toISOString()
+                };
+                const id = await FirestoreOperations.addDoc('contactMessages', payload);
+                return res.json({ success: true, id });
+            } catch (err) {
+                console.error('Failed to write contact to Firestore:', err && err.message);
+                return res.status(500).json({ error: 'Failed to save message' });
+            }
+        } catch (err) {
+            console.error('Contact webhook error:', err);
+            res.status(500).json({ error: 'Server error' });
+        }
+    });
+
+    // Dev-only admin UI to list submitted contact messages (reads from Firestore or in-memory file)
+    app.get('/admin/contacts', async (req, res) => {
+        try {
+            // Access control: if ADMIN_KEY is set require header x-admin-key to match; otherwise allow in non-production
+            const adminKey = process.env.ADMIN_KEY;
+            if (adminKey) {
+                const provided = req.headers['x-admin-key'];
+                if (!provided || provided !== adminKey) return res.status(403).send('Forbidden');
+            } else if (process.env.NODE_ENV === 'production') {
+                return res.status(403).send('Forbidden');
+            }
+
+            // Try Firestore first
+            if (isUsingFirebase && firebaseAdmin && firebaseAdmin.FirestoreOperations) {
+                const docs = await firebaseAdmin.FirestoreOperations.getAllDocs('contactMessages');
+                // Render a minimal HTML table for dev
+                let html = '<!doctype html><html><head><meta charset="utf-8"><title>Contacts</title></head><body><h1>Contact Messages</h1><table border="1" cellpadding="8"><tr><th>Created</th><th>Name</th><th>Email</th><th>Subject</th><th>Message</th><th>UserUid</th></tr>';
+                docs.forEach(d => {
+                    html += `<tr><td>${d.createdAt || ''}</td><td>${escapeHtml(d.name || '')}</td><td>${escapeHtml(d.email || '')}</td><td>${escapeHtml(d.subject || '')}</td><td>${escapeHtml(d.message || '')}</td><td>${escapeHtml(d.userUid || '')}</td></tr>`;
+                });
+                html += '</table></body></html>';
+                res.send(html);
+                return;
+            }
+
+            // Fallback: read persisted file if present
+            const contactsFile = path.join(__dirname, 'data', 'contactMessages.json');
+            if (fs.existsSync(contactsFile)) {
+                const raw = fs.readFileSync(contactsFile, 'utf8') || '[]';
+                const list = JSON.parse(raw);
+                return res.json({ contacts: list });
+            }
+
+            return res.json({ contacts: [] });
+        } catch (err) {
+            console.error('Admin contacts error:', err);
+            res.status(500).send('Server error');
+        }
     });
 
     // --- Routes ---
@@ -291,10 +452,14 @@ function startServer() {
                 return res.json({ users: list });
             }
 
-            // If using MongoDB, attempt to read from the User model (dev only)
-            if (isUsingMongo && User && typeof User.find === 'function') {
-                const docs = await User.find({});
-                return res.json({ users: docs });
+            // If using Firebase, attempt to read users from Firestore (dev only)
+            if (isUsingFirebase && firebaseAdmin && typeof firebaseAdmin.FirestoreOperations !== 'undefined') {
+                try {
+                    const docs = await firebaseAdmin.FirestoreOperations.getAllDocs('users');
+                    return res.json({ users: docs });
+                } catch (e) {
+                    console.warn('Failed to read users from Firestore', e && e.message);
+                }
             }
 
             return res.json({ users: [] });
@@ -312,9 +477,14 @@ function startServer() {
         server.listen(port);
         server.on('listening', () => {
             console.log(`StudentGear backend listening on http://localhost:${port}`);
-            console.log(`Startup mode: ${isUsingMongo ? 'mongodb' : 'in-memory'}`);
-            if (isUsingMongo) {
-                console.log(`Mongoose readyState: ${mongoose && mongoose.connection ? mongoose.connection.readyState : 'unknown'}`);
+            console.log(`Startup mode: ${isUsingFirebase ? 'firebase' : 'in-memory'}`);
+            if (isUsingFirebase) {
+                try {
+                    const ready = !!firebaseAdmin.getFirestore();
+                    console.log(`Firestore available: ${ready}`);
+                } catch (e) {
+                    console.log('Firestore available: unknown');
+                }
             }
         });
         server.on('error', (err) => {
@@ -336,25 +506,45 @@ function startServer() {
     tryListen(parseInt(PORT, 10) || 3000, attempts);
 }
 
-// Decide whether to use real MongoDB or fall back to in-memory storage
-if (!MONGODB_URI || MONGODB_URI.includes('<') || MONGODB_URI.includes('<db_password>')) {
-    console.warn('No valid MONGODB_URI found. Using in-memory fallback (not persistent).');
+// Initialize Firebase Admin and use Firestore-backed models. Fall back to in-memory models if initialization fails.
+try {
+    // Allow providing a service account via an env var to avoid writing files to disk.
+    // Supported options (priority):
+    // 1) `GOOGLE_APPLICATION_CREDENTIALS` pointing to a service account JSON file (handled by firebase-admin)
+    // 2) `FIREBASE_SERVICE_ACCOUNT_JSON` containing raw JSON or base64-encoded JSON of the service account
+    let serviceAccount = null;
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+        const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON.trim();
+        try {
+            if (raw.startsWith('{')) {
+                serviceAccount = JSON.parse(raw);
+            } else {
+                // treat as base64
+                const decoded = Buffer.from(raw, 'base64').toString('utf8');
+                serviceAccount = JSON.parse(decoded);
+            }
+            console.log('Using service account from FIREBASE_SERVICE_ACCOUNT_JSON env var');
+        } catch (e) {
+            console.warn('Failed to parse FIREBASE_SERVICE_ACCOUNT_JSON; falling back to application-default credentials');
+            serviceAccount = null;
+        }
+    }
+
+    const ok = firebaseAdmin.initializeFirebaseAdmin(serviceAccount);
+    if (ok) {
+        ({ User, Cart, Product } = makeFirestoreModels());
+        isUsingFirebase = true;
+        console.log('Using Firestore for data storage');
+    } else {
+        console.warn('Firebase Admin failed to initialize; using in-memory fallback');
+        ({ User, Cart, Product } = makeInMemoryModels());
+    }
+} catch (err) {
+    console.error('Firebase initialization error:', err && err.message);
     ({ User, Cart, Product } = makeInMemoryModels());
-    startServer();
-} else {
-    mongoose.connect(MONGODB_URI)
-        .then(() => {
-            console.log('Connected to MongoDB');
-            ({ User, Cart, Product } = mongooseModels);
-            startServer();
-        })
-        .catch(err => {
-            console.error('MongoDB connection error:', err);
-            console.warn('Falling back to in-memory storage (not persistent).');
-            ({ User, Cart, Product } = makeInMemoryModels());
-            startServer();
-        });
 }
+
+startServer();
 
 // The server is started in startServer() above; route handlers are already
 // registered there. No further app.listen calls should exist in this file.

@@ -1,0 +1,14 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Contact messages
+    match /contactMessages/{docId} {
+      // Only admin can read
+      allow read: if request.auth.token.admin == true;
+
+      // Allow anyone to create (submit the form)
+      allow create: if true;
+    }
+  }
+}

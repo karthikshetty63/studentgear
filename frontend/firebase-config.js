@@ -89,7 +89,7 @@ const FirebaseAuthService = {
             return { success: true, user: { uid: user.uid, email: user.email, displayName: finalName, token } };
         } catch (error) {
             console.error('Sign up error:', error);
-            return { success: false, error: error.message || String(error) };
+            return { success: false, error: error.message || String(error), code: error.code || null };
         }
     },
 
@@ -104,7 +104,7 @@ const FirebaseAuthService = {
             return { success: true, user: { uid: user.uid, email: user.email, displayName, token } };
         } catch (error) {
             console.error('Sign in error:', error);
-            return { success: false, error: error.message || String(error) };
+            return { success: false, error: error.message || String(error), code: error.code || null };
         }
     },
 
@@ -115,7 +115,7 @@ const FirebaseAuthService = {
             return { success: true };
         } catch (error) {
             console.error('Sign out error:', error);
-            return { success: false, error: error.message };
+            return { success: false, error: error.message, code: error.code || null };
         }
     },
 
@@ -139,6 +139,38 @@ const FirebaseAuthService = {
             return await user.getIdToken();
         }
         return null;
+    }
+    ,
+
+    // Social sign-in using popup (returns same {success, user, error, code} shape)
+    async signInWithGoogle() {
+        try {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            const result = await firebaseAuth.signInWithPopup(provider);
+            const user = result.user;
+            let token = null;
+            try { token = await user.getIdToken(); } catch (e) { /* ignore */ }
+            const displayName = user.displayName || (user.email ? user.email.split('@')[0] : '');
+            return { success: true, user: { uid: user.uid, email: user.email, displayName, token } };
+        } catch (error) {
+            console.error('Google sign-in error:', error);
+            return { success: false, error: error.message || String(error), code: error.code || null };
+        }
+    },
+
+    async signInWithGithub() {
+        try {
+            const provider = new firebase.auth.GithubAuthProvider();
+            const result = await firebaseAuth.signInWithPopup(provider);
+            const user = result.user;
+            let token = null;
+            try { token = await user.getIdToken(); } catch (e) { /* ignore */ }
+            const displayName = user.displayName || (user.email ? user.email.split('@')[0] : '');
+            return { success: true, user: { uid: user.uid, email: user.email, displayName, token } };
+        } catch (error) {
+            console.error('GitHub sign-in error:', error);
+            return { success: false, error: error.message || String(error), code: error.code || null };
+        }
     }
 };
 
@@ -223,6 +255,27 @@ const FirestoreService = {
         } catch (error) {
             console.error('Update user profile error:', error);
             return { success: false, error: error.message };
+        }
+    }
+    ,
+
+    // Save a contact message submitted from the website
+    async saveContactMessage(message) {
+        try {
+            if (!firebaseDb || typeof firebaseDb.collection !== 'function') {
+                throw new Error('Firestore not initialized');
+            }
+            const docRef = await firebaseDb.collection('contacts').add({
+                name: message.name || null,
+                email: message.email || null,
+                subject: message.subject || null,
+                message: message.message || null,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            return { success: true, id: docRef.id };
+        } catch (error) {
+            console.error('Save contact message error:', error);
+            return { success: false, error: error.message || String(error), code: error.code || null };
         }
     }
 };
@@ -313,3 +366,14 @@ window.FirebaseAuthService = FirebaseAuthService;
 window.FirestoreService = FirestoreService;
 window.RealtimeDbService = RealtimeDbService;
 window.StorageService = StorageService;
+
+// Auto-initialize Firebase when this file is loaded and the SDK is present.
+// This ensures `firebaseAuth` and `FirebaseAuthService` are available for UI scripts.
+(function () {
+    try {
+        const ok = initializeFirebase();
+        if (!ok) console.warn('Firebase initialization returned false — some features may be limited.');
+    } catch (e) {
+        console.warn('Auto-initialize Firebase failed:', e && e.message);
+    }
+})();

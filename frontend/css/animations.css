@@ -11,7 +11,7 @@
     --animation-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
     --animation-smooth: cubic-bezier(0.4, 0, 0.2, 1);
     --animation-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    
+
     /* Gradient Colors */
     --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     --gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
@@ -19,7 +19,7 @@
     --gradient-warning: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     --gradient-info: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     --gradient-dark: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-    
+
     /* Glow Effects */
     --glow-primary: 0 0 20px rgba(102, 126, 234, 0.4);
     --glow-success: 0 0 20px rgba(56, 239, 125, 0.4);
@@ -36,6 +36,7 @@
         opacity: 0;
         transform: translateY(30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -48,6 +49,7 @@
         opacity: 0;
         transform: translateY(-30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -60,6 +62,7 @@
         opacity: 0;
         transform: scale(0.9);
     }
+
     to {
         opacity: 1;
         transform: scale(1);
@@ -72,12 +75,15 @@
         opacity: 0;
         transform: scale(0.3);
     }
+
     50% {
         transform: scale(1.05);
     }
+
     70% {
         transform: scale(0.9);
     }
+
     100% {
         opacity: 1;
         transform: scale(1);
@@ -90,6 +96,7 @@
         opacity: 0;
         transform: translateX(100px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
@@ -102,6 +109,7 @@
         opacity: 0;
         transform: translateX(-100px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
@@ -110,9 +118,12 @@
 
 /* Pulse */
 @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
     }
+
     50% {
         transform: scale(1.05);
     }
@@ -120,34 +131,63 @@
 
 /* Shake */
 @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-    20%, 40%, 60%, 80% { transform: translateX(5px); }
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+        transform: translateX(-5px);
+    }
+
+    20%,
+    40%,
+    60%,
+    80% {
+        transform: translateX(5px);
+    }
 }
 
 /* Glow Pulse */
 @keyframes glowPulse {
-    0%, 100% {
+
+    0%,
+    100% {
         box-shadow: 0 0 5px rgba(102, 126, 234, 0.4),
-                    0 0 10px rgba(102, 126, 234, 0.3),
-                    0 0 15px rgba(102, 126, 234, 0.2);
+            0 0 10px rgba(102, 126, 234, 0.3),
+            0 0 15px rgba(102, 126, 234, 0.2);
     }
+
     50% {
         box-shadow: 0 0 10px rgba(102, 126, 234, 0.6),
-                    0 0 20px rgba(102, 126, 234, 0.5),
-                    0 0 30px rgba(102, 126, 234, 0.4);
+            0 0 20px rgba(102, 126, 234, 0.5),
+            0 0 30px rgba(102, 126, 234, 0.4);
     }
 }
 
 /* Spinner */
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Float */
 @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
 }
 
 /* Ripple Effect */
@@ -163,6 +203,7 @@
     0% {
         stroke-dashoffset: 50;
     }
+
     100% {
         stroke-dashoffset: 0;
     }
@@ -174,9 +215,11 @@
         opacity: 0;
         transform: translateX(-20px) scale(0.8);
     }
+
     50% {
         transform: translateX(5px) scale(1.02);
     }
+
     100% {
         opacity: 1;
         transform: translateX(0) scale(1);
@@ -189,6 +232,7 @@
         opacity: 1;
         transform: translateX(0) scale(1);
     }
+
     100% {
         opacity: 0;
         transform: translateX(50px) scale(0.8);
@@ -197,9 +241,17 @@
 
 /* Cart Badge Pop */
 @keyframes badgePop {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.4); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.4);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 /* ============================================
@@ -231,6 +283,25 @@
     -webkit-backdrop-filter: blur(8px);
 }
 
+/* Ensure overlay is below the modal card and allows pointer-events to pass to the card */
+.login-modal-saas .modal-overlay {
+    z-index: 10000;
+}
+
+.login-modal-saas .modal-card {
+    z-index: 10001;
+    pointer-events: auto;
+}
+
+/* Prevent clicks when modal is hidden */
+.login-modal-saas {
+    pointer-events: none;
+}
+
+.login-modal-saas.visible {
+    pointer-events: auto;
+}
+
 .login-modal-saas .modal-card {
     position: relative;
     width: 100%;
@@ -240,7 +311,7 @@
     border-radius: 24px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5),
-                0 0 40px rgba(102, 126, 234, 0.1);
+        0 0 40px rgba(102, 126, 234, 0.1);
     overflow: hidden;
     transform: scale(0.9) translateY(20px);
     transition: all var(--animation-normal) var(--animation-spring);
@@ -264,7 +335,7 @@
     left: 32px;
     right: 32px;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
 }
 
 .login-modal-saas .modal-logo {
@@ -360,9 +431,17 @@
     animation: fadeInUp var(--animation-normal) ease-out;
 }
 
-.login-modal-saas .form-group:nth-child(1) { animation-delay: 0.1s; }
-.login-modal-saas .form-group:nth-child(2) { animation-delay: 0.15s; }
-.login-modal-saas .form-group:nth-child(3) { animation-delay: 0.2s; }
+.login-modal-saas .form-group:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.login-modal-saas .form-group:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.login-modal-saas .form-group:nth-child(3) {
+    animation-delay: 0.2s;
+}
 
 .login-modal-saas .form-label {
     display: block;
@@ -395,7 +474,7 @@
     box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
 }
 
-.login-modal-saas .form-input:focus + .form-label,
+.login-modal-saas .form-input:focus+.form-label,
 .login-modal-saas .form-group:focus-within .form-label {
     color: #667eea;
 }
@@ -514,7 +593,7 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
 }
 
 .login-modal-saas .divider span {
@@ -600,7 +679,7 @@
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4),
-                0 0 30px rgba(102, 126, 234, 0.1);
+        0 0 30px rgba(102, 126, 234, 0.1);
     overflow: hidden;
     opacity: 0;
     visibility: hidden;
@@ -946,8 +1025,13 @@
 }
 
 @keyframes shrink {
-    from { width: 100%; }
-    to { width: 0%; }
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
+    }
 }
 
 /* ============================================
@@ -1008,20 +1092,20 @@
         margin: 16px;
         border-radius: 20px;
     }
-    
+
     .login-modal-saas .modal-header {
         padding: 24px 24px 16px;
     }
-    
+
     .login-modal-saas .modal-body {
         padding: 20px 24px 28px;
     }
-    
+
     .cart-dropdown-saas {
         width: calc(100vw - 32px);
         right: 16px;
     }
-    
+
     .notification-saas {
         left: 16px;
         right: 16px;

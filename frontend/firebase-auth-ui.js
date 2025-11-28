@@ -1,7 +1,7 @@
 // Firebase Auth UI Integration
 // This file handles the UI integration for Firebase Authentication
 
-(function() {
+(function () {
     // Wait for Firebase to be initialized
     function waitForFirebase(callback, maxAttempts = 10) {
         let attempts = 0;
@@ -57,8 +57,8 @@
         if (loginBtn) {
             loginBtn.textContent = 'Login';
             // Use Firebase modal if Firebase is available and properly initialized, otherwise keep script.js fallback
-            if (typeof FirebaseAuthService !== 'undefined' && 
-                typeof firebaseAuth !== 'undefined' && firebaseAuth && 
+            if (typeof FirebaseAuthService !== 'undefined' &&
+                typeof firebaseAuth !== 'undefined' && firebaseAuth &&
                 typeof showFirebaseLoginModal === 'function') {
                 loginBtn.onclick = showFirebaseLoginModal;
             }
@@ -194,6 +194,55 @@
         const passwordInput = form.querySelector('input[name="password"]');
         let isSignUp = false;
 
+        // Insert a password strength meter element (progress bar + label)
+        const pwdWrapper = form.querySelector('.password-wrapper');
+        const pwdMeter = document.createElement('div');
+        pwdMeter.className = 'password-meter';
+        pwdMeter.style.cssText = 'margin-top:8px;display:flex;align-items:center;gap:8px;';
+        pwdMeter.innerHTML = `<div class="meter-bar" style="flex:1;height:8px;background:#eee;border-radius:6px;overflow:hidden;"><div class="meter-fill" style="width:0%;height:100%;background:#ef4444"></div></div><div class="meter-label" style="min-width:80px;font-size:0.85rem;color:#444">Empty</div>`;
+        pwdWrapper.appendChild(pwdMeter);
+        const pwdStrength = pwdMeter.querySelector('.meter-label');
+        const pwdFill = pwdMeter.querySelector('.meter-fill');
+
+        function evaluatePasswordStrength(pw) {
+            if (!pw) return { score: 0, label: 'Empty' };
+            let score = 0;
+            if (pw.length >= 8) score += 2;
+            if (/[A-Z]/.test(pw)) score += 1;
+            if (/[0-9]/.test(pw)) score += 1;
+            if (/[^A-Za-z0-9]/.test(pw)) score += 1;
+            let label = 'Weak';
+            if (score >= 4) label = 'Very strong';
+            else if (score >= 3) label = 'Strong';
+            else if (score >= 2) label = 'Medium';
+            return { score, label };
+        }
+
+        // Friendly error mapping
+        function friendlyError(err) {
+            // err may be an object { code, error } or a string
+            const msg = (typeof err === 'string') ? err : (err && (err.code || err.error || err.message));
+            const code = (typeof err === 'object' && err && (err.code || null)) || null;
+
+            const map = {
+                'auth/email-already-in-use': 'An account with this email already exists. Try signing in or use a different email.',
+                'auth/invalid-email': 'Please enter a valid email address.',
+                'auth/wrong-password': 'Incorrect password. Try again or reset your password.',
+                'auth/user-not-found': 'No account found for that email. Try creating an account.',
+                'auth/weak-password': 'Password is too weak. Use at least 8 characters with numbers and symbols.',
+                'auth/too-many-requests': 'Too many attempts. Try again later.',
+                'auth/network-request-failed': 'Network error. Check your connection and try again.'
+            };
+
+            if (code && map[code]) return map[code];
+            // fallback to heuristics on message
+            if (typeof msg === 'string') {
+                if (msg.toLowerCase().includes('password')) return 'Password error: ' + msg;
+                if (msg.toLowerCase().includes('email')) return 'Email error: ' + msg;
+            }
+            return typeof msg === 'string' ? msg : 'An unexpected error occurred. Please try again.';
+        }
+
         // Password toggle
         passwordToggle.addEventListener('click', () => {
             const type = passwordInput.type === 'password' ? 'text' : 'password';
@@ -201,12 +250,22 @@
             passwordToggle.textContent = type === 'password' ? '👁' : '🙈';
         });
 
+        // Update strength on input
+        passwordInput.addEventListener('input', () => {
+            const val = passwordInput.value || '';
+            const { score, label } = evaluatePasswordStrength(val);
+            pwdStrength.textContent = `${label}`;
+            const pct = Math.min(100, Math.round((score / 5) * 100));
+            pwdFill.style.width = pct + '%';
+            pwdFill.style.background = score >= 4 ? '#16a34a' : score >= 3 ? '#84cc16' : score >= 2 ? '#f59e0b' : '#ef4444';
+        });
+
         // Tab switching with animation
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 tabs.forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                
+
                 isSignUp = tab.dataset.tab === 'signup';
                 nameField.style.display = isSignUp ? 'block' : 'none';
                 submitBtn.querySelector('span').textContent = isSignUp ? 'Create Account' : 'Sign In';
@@ -229,6 +288,25 @@
             const password = form.elements['password'].value;
             const displayName = form.elements['displayName'].value.trim();
 
+            // Client-side validation
+            const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            // Clear inline error styles
+            form.elements['email'].style.outline = '';
+            form.elements['password'].style.outline = '';
+
+            if (!emailRe.test(email)) {
+                errorDiv.textContent = 'Please enter a valid email address';
+                errorDiv.style.display = 'block';
+                form.elements['email'].style.outline = '2px solid #ef4444';
+                return;
+            }
+            if (isSignUp && password.length < 8) {
+                errorDiv.textContent = 'Password must be at least 8 characters for new accounts';
+                errorDiv.style.display = 'block';
+                form.elements['password'].style.outline = '2px solid #ef4444';
+                return;
+            }
+
             submitBtn.disabled = true;
             submitBtn.classList.add('loading');
             submitBtn.querySelector('span').textContent = isSignUp ? 'Creating account...' : 'Signing in...';
@@ -246,14 +324,14 @@
                     closeModal();
                     showSaasNotification(isSignUp ? 'Account created!' : 'Welcome back!', 'success', isSignUp ? '🎉' : '✅');
                 } else {
-                    errorDiv.textContent = result.error;
+                    errorDiv.textContent = friendlyError(result);
                     errorDiv.style.display = 'block';
                     submitBtn.disabled = false;
                     submitBtn.classList.remove('loading');
                     submitBtn.querySelector('span').textContent = isSignUp ? 'Create Account' : 'Sign In';
                 }
             } catch (error) {
-                errorDiv.textContent = error.message;
+                errorDiv.textContent = friendlyError(error);
                 errorDiv.style.display = 'block';
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('loading');
@@ -275,7 +353,7 @@
                 await firebaseAuth.sendPasswordResetEmail(email);
                 showNotification('📧 Password reset email sent!');
             } catch (error) {
-                errorDiv.textContent = error.message;
+                errorDiv.textContent = friendlyError(error);
                 errorDiv.style.display = 'block';
             }
         });
@@ -301,15 +379,15 @@
             <button class="notification-close">×</button>
             <div class="progress-bar"></div>
         `;
-        
+
         document.body.appendChild(notification);
         setTimeout(() => notification.classList.add('visible'), 10);
-        
+
         notification.querySelector('.notification-close').addEventListener('click', () => {
             notification.classList.remove('visible');
             setTimeout(() => notification.remove(), 300);
         });
-        
+
         setTimeout(() => {
             notification.classList.remove('visible');
             setTimeout(() => notification.remove(), 300);
@@ -328,7 +406,7 @@
     // Initialize when ready
     waitForFirebase(() => {
         enhanceLoginModal();
-        
+
         // Override the login button click handler
         const loginBtn = document.querySelector('.login-btn');
         if (loginBtn) {
