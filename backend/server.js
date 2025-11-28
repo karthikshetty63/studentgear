@@ -211,12 +211,22 @@ function startServer() {
     // Authenticated webhook to receive contact messages from frontend and store via Firebase Admin
     app.post('/api/contact', async (req, res) => {
         try {
-            const { name, email, subject, message } = req.body || {};
+            // Accept either `message` or `description` field (some clients call it description)
+            const raw = req.body || {};
+            const name = raw.name;
+            const email = raw.email;
+            const subject = raw.subject || null;
+            const message = (typeof raw.message === 'string' && raw.message.length) ? raw.message : (typeof raw.description === 'string' ? raw.description : '');
+
             // Basic server-side validation
-            if (!name || !email || !message) return res.status(400).json({ error: 'name, email and message are required' });
+            // Allow long multiline messages (up to 20k chars)
+            if (!name || !email || !message) {
+                console.warn('Contact submission missing required fields', { body: raw });
+                return res.status(400).json({ error: 'name, email and message (or description) are required' });
+            }
             if (typeof name !== 'string' || name.length > 200) return res.status(400).json({ error: 'Invalid name' });
             if (typeof email !== 'string' || email.length > 200) return res.status(400).json({ error: 'Invalid email' });
-            if (typeof message !== 'string' || message.length > 5000) return res.status(400).json({ error: 'Invalid message' });
+            if (typeof message !== 'string' || message.length > 20000) return res.status(400).json({ error: 'Invalid message (too long)' });
 
             // Require Firebase ID token in Authorization header
             const authHeader = req.headers.authorization || req.headers['x-auth-token'];
@@ -227,22 +237,47 @@ function startServer() {
             const decoded = await firebaseAdmin.verifyIdToken(token);
             if (!decoded) return res.status(401).json({ error: 'Invalid token' });
 
-            // Save to Firestore using admin helper if available
+            // Save to Firestore using admin helper if available; if Firestore write fails, persist locally.
+            const payload = {
+                name,
+                email,
+                subject: subject || null,
+                message,
+                userUid: decoded.uid || null,
+                createdAt: new Date().toISOString()
+            };
+
             try {
                 const { FirestoreOperations } = firebaseAdmin;
-                const payload = {
-                    name,
-                    email,
-                    subject: subject || null,
-                    message,
-                    userUid: decoded.uid || null,
-                    createdAt: new Date().toISOString()
-                };
                 const id = await FirestoreOperations.addDoc('contactMessages', payload);
                 return res.json({ success: true, id });
             } catch (err) {
-                console.error('Failed to write contact to Firestore:', err && err.message);
-                return res.status(500).json({ error: 'Failed to save message' });
+                console.error('Failed to write contact to Firestore, falling back to local file:', err && err.message);
+                // Fallback: persist to backend/data/contactMessages.json
+                try {
+                    const contactsFile = path.join(__dirname, 'data', 'contactMessages.json');
+                    let list = [];
+                    try {
+                        if (fs.existsSync(contactsFile)) {
+                            const rawFile = fs.readFileSync(contactsFile, 'utf8') || '[]';
+                            list = JSON.parse(rawFile);
+                        }
+                    } catch (e) {
+                        console.warn('Failed to read fallback contacts file', e && e.message);
+                        list = [];
+                    }
+                    const localId = `local-${Date.now()}`;
+                    list.push({ id: localId, ...payload });
+                    try {
+                        fs.writeFileSync(contactsFile, JSON.stringify(list, null, 2), 'utf8');
+                    } catch (e) {
+                        console.error('Failed to write fallback contacts file', e && e.message);
+                    }
+                    return res.json({ success: true, id: localId, fallback: true });
+                } catch (e) {
+                    console.error('Fallback save failed too:', e && e.message);
+                    return res.status(500).json({ error: 'Failed to save message' });
+                }
             }
         } catch (err) {
             console.error('Contact webhook error:', err);
