@@ -1089,13 +1089,10 @@ function showProducts(branch) {
                 e.stopPropagation();
                 const card = e.target.closest('.branch-product-card');
                 const productName = card.querySelector('.product-name').textContent;
-                console.log('Buy clicked for product:', productName); // Debug log
                 const product = PRODUCT_LOOKUP[productName.toLowerCase()];
                 if (product) {
-                    console.log('Found product data:', product); // Debug log
                     showBuyOptions(product);
                 } else {
-                    console.error('Product not found in lookup:', productName); // Debug log
                     showNotification(`🛒 ${productName} selected.`);
                 }
             };
@@ -1317,9 +1314,6 @@ applyFilterBtn.addEventListener('click', () => {
 
     // Show notification
     showNotification('✓ Filters applied successfully!');
-
-    // Log filter values (in real app, this would filter products)
-    console.log('Filters applied:', { category, brand, price });
 });
 
 resetFilterBtn.addEventListener('click', () => {
