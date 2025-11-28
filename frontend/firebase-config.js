@@ -36,13 +36,13 @@ function initializeFirebase() {
 
         // Initialize Firebase Auth
         firebaseAuth = firebase.auth();
-        
+
         // Initialize Firestore
         firebaseDb = firebase.firestore();
-        
+
         // Initialize Realtime Database
         firebaseRealtimeDb = firebase.database();
-        
+
         // Initialize Storage
         firebaseStorage = firebase.storage();
 
@@ -61,24 +61,35 @@ const FirebaseAuthService = {
         try {
             const userCredential = await firebaseAuth.createUserWithEmailAndPassword(email, password);
             const user = userCredential.user;
-            
-            // Update display name
-            if (displayName) {
-                await user.updateProfile({ displayName });
+
+            // Update display name on the Firebase user
+            const finalName = displayName || (email && email.split ? email.split('@')[0] : '');
+            if (finalName) {
+                try { await user.updateProfile({ displayName: finalName }); } catch (e) { /* non-fatal */ }
             }
-            
-            // Create user document in Firestore
-            await firebaseDb.collection('users').doc(user.uid).set({
-                email: user.email,
-                displayName: displayName || email.split('@')[0],
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                cart: []
-            });
-            
-            return { success: true, user };
+
+            // Attempt to create a user document in Firestore if available
+            try {
+                if (firebaseDb && typeof firebaseDb.collection === 'function') {
+                    await firebaseDb.collection('users').doc(user.uid).set({
+                        email: user.email,
+                        displayName: finalName,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        cart: []
+                    });
+                }
+            } catch (e) {
+                console.warn('Failed to write user document to Firestore (non-fatal)', e && e.message);
+            }
+
+            // Return a simple, serializable user object including an ID token
+            let token = null;
+            try { token = await user.getIdToken(); } catch (e) { /* ignore token errors */ }
+
+            return { success: true, user: { uid: user.uid, email: user.email, displayName: finalName, token } };
         } catch (error) {
             console.error('Sign up error:', error);
-            return { success: false, error: error.message };
+            return { success: false, error: error.message || String(error) };
         }
     },
 
@@ -86,10 +97,14 @@ const FirebaseAuthService = {
     async signIn(email, password) {
         try {
             const userCredential = await firebaseAuth.signInWithEmailAndPassword(email, password);
-            return { success: true, user: userCredential.user };
+            const user = userCredential.user;
+            let token = null;
+            try { token = await user.getIdToken(); } catch (e) { /* ignore */ }
+            const displayName = user.displayName || (user.email ? user.email.split('@')[0] : '');
+            return { success: true, user: { uid: user.uid, email: user.email, displayName, token } };
         } catch (error) {
             console.error('Sign in error:', error);
-            return { success: false, error: error.message };
+            return { success: false, error: error.message || String(error) };
         }
     },
 
@@ -114,7 +129,7 @@ const FirebaseAuthService = {
         if (firebaseAuth) {
             return firebaseAuth.onAuthStateChanged(callback);
         }
-        return () => {};
+        return () => { };
     },
 
     // Get ID token for API calls
